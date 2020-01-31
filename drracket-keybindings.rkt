@@ -1,13 +1,17 @@
 #lang s-exp framework/keybinding-lang
 
-(define (command-bind key command)
-  (keybinding
-   key
-   (λ (editor evt)
-     (send (send editor get-keymap) call-function
-           command editor evt #t))))
+;; Helper
+(define (keymap-command-bind key command)
+  (keybinding key (λ (editor evt)
+                    (send (send editor get-keymap) call-function
+                          command editor evt #t))))
 
-(keybinding "c:space" (λ (editor event) (send editor auto-complete)))
-(keybinding "c:l"     (λ (editor event) (send editor insert "λ")))
-(command-bind "?:a:semicolon" "uncomment")
-(command-bind "d:semicolon" "comment-out")
+(define (editor-method-bind key method . args)
+  (keybinding key (λ (editor evt)
+                    (apply dynamic-send editor method args))))
+
+;; Bindings
+(editor-method-bind "c:space" 'auto-complete)
+(editor-method-bind "c:l" 'insert "λ")
+(keymap-command-bind "?:a:semicolon" "uncomment")
+(keymap-command-bind "d:semicolon" "comment-out")
